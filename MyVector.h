@@ -17,27 +17,30 @@ private:
 	void Resizeable();
 	void ReallocMem();
 	void AllocMem(size_t srcSize);
+
 public:
 	Vector();
 	Vector(const Vector<_T> &vect);
 	Vector(size_t count, const_pointer arr);
 	void push_back(const_reference value);
-	int find(const _T& value)const;
+	void reserve(size_t n);
+	_T find(const _T& value)const;
 	void erase(const _T& position);
 	void insert(const _T& value, const size_t pos);
 	const size_t Size()const;
+	const size_t _Capacity()const;
 	_T& operator[](int index)const;
 	~Vector()noexcept;
-	_T* begin();
-	_T* end();
+	_T* begin()const;
+	_T* end()const;
 
 };
 
 template<class _T>
 inline void Vector<_T>::Resizeable()
 {
-	while (size+1 > Capacity)
-		Capacity += 10;
+	while (size >= Capacity)
+		Capacity *=2;
 }
 
 template<class _T>
@@ -47,6 +50,8 @@ inline void Vector<_T>::ReallocMem()
 	delete[]Target;
 	Target = new _T[Capacity];
 	std::copy_n(buff.Target, buff.size, Target);
+	this->size = buff.size;
+	this->Capacity = buff.Capacity;
 }
 
 template<class _T>
@@ -60,25 +65,31 @@ inline void Vector<_T>::AllocMem(size_t srcSize)
 template<class _T>
 inline Vector<_T>::Vector()
 {
-	AllocMem(0);
+	this->Target = new _T[Capacity];
+	size = 0;
+
 }
 
 template<class _T>
 inline Vector<_T>::Vector(const Vector &vect)
 {
 	size = vect.size;
-	AllocMem(size);
+	Capacity = vect.Capacity;
+	this->Target = new _T[Capacity];
+
 	std::copy_n(vect.Target, vect.size, Target);
 
 }
-
 template<class _T>
 inline Vector<_T>::Vector(size_t count, const_pointer arr)
 {
 	if (arr != nullptr)
 	{
 		size = count;
-		AllocMem(count);
+		reserve(count);
+		if (Target == nullptr)
+			Target = new _T[Capacity];
+
 		std::copy_n(arr, count, Target);
 	}
 }
@@ -86,22 +97,26 @@ inline Vector<_T>::Vector(size_t count, const_pointer arr)
 template<class _T>
 inline void Vector<_T>::push_back(const_reference value)
 {
-	if (size+1 < Capacity)
-	{
-		 new((void*)(Target + size))_T(value);
-		size++;
-	}
-	else
-	{
-		Vector buff(*this);
-		delete[]Target;
-		AllocMem(size);
-		std::copy_n(buff.Target, size++, this->Target);
-	}
+	
+	if (size == Capacity) reserve(2 * size);
+	Target[size] = value;
+	++size;
 }
 
 template<class _T>
-inline  int  Vector<_T>::find(const _T& value) const
+inline void Vector<_T>::reserve(size_t n)
+{
+	if (n <= Capacity)return;
+	_T* newarr = new _T[n];
+	for (size_t i = 0; i < size; ++i)
+		newarr[i] = Target[i];
+	delete[]Target;
+	Target = newarr;
+	Capacity = n;
+}
+
+template<class _T>
+inline  _T  Vector<_T>::find(const _T& value) const
 {
 	int first = 0;
 	int last = size -1;
@@ -120,10 +135,11 @@ inline  int  Vector<_T>::find(const _T& value) const
 template<class _T>
 inline void Vector<_T>::erase(const _T& position)
 {	
+	if (position > size || position <= 0 || this == nullptr ||size ==0)
+		return;
 	auto positionSwap = position - 1;
-	auto swapElem = Target[position];
-	std::copy_n(this->Target, positionSwap-1, this->Target);
-	std::copy_n(this->Target + positionSwap +1, positionSwap + 1, this->Target+ positionSwap);
+	for (int i = positionSwap; i < size; i++)
+		Target[i] = Target[i + 1];
 	size--;
 
 }
@@ -132,9 +148,9 @@ template<class _T>
 inline void Vector<_T>::insert(const _T& value, const size_t pos)
 {
 	auto positionInsert = pos - 1;
-	if (pos > size || pos < 0)
+	if (positionInsert > size || positionInsert < 0)
 		return;
-	if (pos > Capacity ||size > Capacity) {
+	if (positionInsert >= Capacity ||size >= Capacity) {
 		Resizeable();
 		ReallocMem();	
 	}
@@ -149,6 +165,12 @@ template<class _T>
 inline const size_t Vector<_T>::Size() const
 {
 	return this->size;
+}
+
+template<class _T>
+inline const size_t Vector<_T>::_Capacity() const
+{
+	return this->Capacity;
 }
 
 template<class _T>
@@ -167,13 +189,13 @@ inline Vector<_T>::~Vector()noexcept
 }
 
 template<class _T>
-inline _T* Vector<_T>::begin()
+inline _T* Vector<_T>::begin()const
 {
 	return this->Target;
 }
 
 template<class _T>
-inline _T* Vector<_T>::end()
+inline _T* Vector<_T>::end()const
 {
 	return this->Target+size;
 }

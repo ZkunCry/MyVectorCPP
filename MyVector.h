@@ -1,7 +1,6 @@
 #pragma once
 #include <iostream>
-#include <iterator>
-#include <algorithm>
+#include <random>
 template<class _T>
 class Vector
 {
@@ -14,6 +13,7 @@ private:
 	pointer Target;
 	size_t Capacity=10;
 	size_t size;
+	int randAB(int min, int max);
 
 public:
 	Vector();
@@ -22,18 +22,21 @@ public:
 	Vector(const size_t size);
 	void push_back(const_reference value);
 	void reserve(size_t n);
-	void resize(size_t n, const _T& value = _T());
-	_T find(const _T& value)const;
-	void erase(const _T& position);
-	void insert(const _T& value, const size_t pos);
+	void resize(size_t n, const_reference value = _T());
+	_T find(const_reference value)const;
+	void erase(const_reference position);
+	void insert(const_reference value,  const_reference pos);
 	const size_t Size()const;
 	const size_t _Capacity()const;
 	_T& operator[](int index)const;
 	~Vector()noexcept;
 	_T* begin()const;
 	_T* end()const;
+	 void printDebug();
 
 };
+
+
 
 template<class _T>
 inline Vector<_T>::Vector()
@@ -98,7 +101,7 @@ inline void Vector<_T>::reserve(size_t n)
 }
 
 template<class _T>
-inline void Vector<_T>::resize(size_t n, const _T& value)
+inline void Vector<_T>::resize(size_t n, const_reference value)
 {
 	if (n > Capacity)
 		reserve(n);
@@ -109,7 +112,7 @@ inline void Vector<_T>::resize(size_t n, const _T& value)
 }
 
 template<class _T>
-inline  _T  Vector<_T>::find(const _T& value) const
+inline  _T  Vector<_T>::find(const_reference value) const
 {
 	int first = 0;
 	int last = size -1;
@@ -126,35 +129,45 @@ inline  _T  Vector<_T>::find(const _T& value) const
 }
 
 template<class _T>
-inline void Vector<_T>::erase(const _T& position)
-{	
-	if (position > size || position <= 0 || this == nullptr ||size ==0)
-		return;
-	auto positionSwap = position - 1;
-	for (int i = positionSwap; i < size; i++)
-		Target[i] = Target[i + 1];
-	size--;
-
+inline void Vector<_T>::erase(const_reference position)
+{
+	try {
+		if (position > size || position <= 0 || this == nullptr || size == 0)
+			throw std::out_of_range("Invalid index, out_of_range");
+		auto positionSwap = position - 1;
+		for (int i = positionSwap; i < size; i++)
+			Target[i] = Target[i + 1];
+		size--;
+	}
+	catch (std::exception &error) {
+		std::cout << error.what() << std::endl;
+	}
 }
 
 template<class _T>
-inline void Vector<_T>::insert(const _T& value, const size_t pos)
+inline void Vector<_T>::insert(const_reference value, const_reference pos)
 {
 
-	if (pos < 0 || pos > size)
-		return;
-	if (size != Capacity)
-	{
-		for (int i = size - 1; i >= pos; --i)
-			Target[i + 1] = Target[i];
-		Target[pos] = value;
-		++size;
+	try {
+		if (pos < 0 || pos > size)
+			throw std::out_of_range("Invalid position index, out_of_range");
+		if (size != Capacity)
+		{
+			for (int i = size - 1; i >= pos; --i)
+				Target[i + 1] = Target[i];
+			Target[pos] = value;
+			++size;
+		}
+		else
+		{
+			reserve(size * 2);
+			insert(value, pos);
+		}
 	}
-	else
-	{
-		reserve(size * 2);
-		insert(value, pos);
+	catch (std::exception &error) {
+		std::cout << error.what << std::endl;
 	}
+	
 	
 }
 
@@ -173,7 +186,12 @@ inline const size_t Vector<_T>::_Capacity() const
 template<class _T>
 inline _T& Vector<_T>::operator[](int index) const
 {
-	return *(this->Target + index);
+	try {
+		return index >=size?throw std::out_of_range("Invalid index, out_of_range"): * (this->Target + index);
+	}
+	catch (std::exception& error) {
+		std::cout << error.what()  << std::endl;
+	}
 }
 
 template<class _T>
@@ -195,4 +213,51 @@ template<class _T>
 inline _T* Vector<_T>::end()const
 {
 	return this->Target+size;
+}
+
+template<class _T>
+inline int Vector<_T>::randAB(int min, int max)
+{
+	return (((rand()) << 15) | rand())
+		% (max - min) + min;
+}
+
+template<class _T>
+ inline  void Vector<_T>::printDebug()
+{
+	const int N = 1000;
+	Vector<int> vect;
+	std::cout << "Test push_back " << std::endl<<"Max count of elements: "<<N<<std::endl;
+	for (int i = 0; i < 1000; i++)
+		vect.push_back(i);
+	std::cout << "INFO: " << "Size: " << vect.Size() << " Capacity: " << vect._Capacity() << std::endl;
+	std::cout<<"Test success" << std::endl<<std::endl;
+	const int count = 30;
+	const int pastSize = vect.size;
+	std::cout << "Test erase method " << std::endl << "Count deleting elements: " << count << std::endl;
+	for (int i = 0; i < count; i++) {
+		vect.erase(randAB(0, vect.Size()));
+	}
+	if (vect.size + count == pastSize) {
+		std::cout << "INFO: " << "Size: " << vect.Size() << " Capacity: " << vect._Capacity() << std::endl;
+		std::cout << "Test success" << std::endl<<std::endl;
+	}
+	else
+	{
+		std::cout << "Test failed" << std::endl;
+	}
+	const int findCount = 30;
+	 int success = 0;
+	std::cout << "Test find " << std::endl << "Max find of elements: " << findCount << std::endl;
+	std::stable_sort(vect.begin(), vect.end());
+	for (int i = 0; i < findCount; i++) {
+		if (vect.find(randAB(0, vect.size)) != -1) {
+			success++;
+		}
+	}
+	if (success == findCount) {
+		std::cout << "INFO: " << "Success find elements: " << success << std::endl;
+		std::cout << "Test success" << std::endl;
+	}
+
 }

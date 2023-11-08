@@ -14,16 +14,15 @@ private:
 	pointer Target;
 	size_t Capacity=10;
 	size_t size;
-	void Resizeable();
-	void ReallocMem();
-	void AllocMem(size_t srcSize);
 
 public:
 	Vector();
 	Vector(const Vector<_T> &vect);
 	Vector(size_t count, const_pointer arr);
+	Vector(const size_t size);
 	void push_back(const_reference value);
 	void reserve(size_t n);
+	void resize(size_t n, const _T& value = _T());
 	_T find(const _T& value)const;
 	void erase(const _T& position);
 	void insert(const _T& value, const size_t pos);
@@ -35,32 +34,6 @@ public:
 	_T* end()const;
 
 };
-
-template<class _T>
-inline void Vector<_T>::Resizeable()
-{
-	while (size >= Capacity)
-		Capacity *=2;
-}
-
-template<class _T>
-inline void Vector<_T>::ReallocMem()
-{
-	Vector buff(*this);
-	delete[]Target;
-	Target = new _T[Capacity];
-	std::copy_n(buff.Target, buff.size, Target);
-	this->size = buff.size;
-	this->Capacity = buff.Capacity;
-}
-
-template<class _T>
-inline void Vector<_T>::AllocMem(size_t srcSize)
-{
-
-	Resizeable();
-	Target = new _T[Capacity];
-}
 
 template<class _T>
 inline Vector<_T>::Vector()
@@ -95,11 +68,20 @@ inline Vector<_T>::Vector(size_t count, const_pointer arr)
 }
 
 template<class _T>
+inline Vector<_T>::Vector(const size_t size)
+{
+	if (size >= Capacity)
+		Capacity = size * 2;
+	this->Target = new _T[Capacity];
+	this->size = size;
+}
+
+template<class _T>
 inline void Vector<_T>::push_back(const_reference value)
 {
 	
 	if (size == Capacity) reserve(2 * size);
-	Target[size] = value;
+	new(Target + size)_T(value);
 	++size;
 }
 
@@ -109,10 +91,21 @@ inline void Vector<_T>::reserve(size_t n)
 	if (n <= Capacity)return;
 	_T* newarr = new _T[n];
 	for (size_t i = 0; i < size; ++i)
-		newarr[i] = Target[i];
+		new(newarr + i)_T(Target[i]);
 	delete[]Target;
 	Target = newarr;
 	Capacity = n;
+}
+
+template<class _T>
+inline void Vector<_T>::resize(size_t n, const _T& value)
+{
+	if (n > Capacity)
+		reserve(n);
+	for (size_t i  = size; i < n; ++i)
+		new(Target + i)_T(value);
+	if (n < size)
+		size = n;
 }
 
 template<class _T>
@@ -147,17 +140,21 @@ inline void Vector<_T>::erase(const _T& position)
 template<class _T>
 inline void Vector<_T>::insert(const _T& value, const size_t pos)
 {
-	auto positionInsert = pos - 1;
-	if (positionInsert > size || positionInsert < 0)
-		return;
-	if (positionInsert >= Capacity ||size >= Capacity) {
-		Resizeable();
-		ReallocMem();	
-	}
 
-	size++;
-	std::copy_n(this->Target + positionInsert, (size - positionInsert)-1, Target + positionInsert + 1);
-	Target[positionInsert] = value;
+	if (pos < 0 || pos > size)
+		return;
+	if (size != Capacity)
+	{
+		for (int i = size - 1; i >= pos; --i)
+			Target[i + 1] = Target[i];
+		Target[pos] = value;
+		++size;
+	}
+	else
+	{
+		reserve(size * 2);
+		insert(value, pos);
+	}
 	
 }
 

@@ -52,7 +52,6 @@ inline Vector<_T>::Vector(const Vector &vect)
 	size = vect.size;
 	Capacity = vect.Capacity;
 	this->Target = new _T[Capacity];
-
 	std::copy_n(vect.Target, vect.size, Target);
 
 }
@@ -153,8 +152,9 @@ inline void Vector<_T>::insert(const_reference value, const_reference pos)
 			throw std::out_of_range("Invalid position index, out_of_range");
 		if (size != Capacity)
 		{
-			for (int i = size - 1; i >= pos; --i)
-				Target[i + 1] = Target[i];
+			/*for (int i = size - 1; i >= pos; --i)
+				Target[i + 1] = Target[i];*/
+			memmove(Target+(pos+1), Target+pos, sizeof(_T)*(size-pos));
 			Target[pos] = value;
 			++size;
 		}
@@ -165,7 +165,7 @@ inline void Vector<_T>::insert(const_reference value, const_reference pos)
 		}
 	}
 	catch (std::exception &error) {
-		std::cout << error.what << std::endl;
+		std::cout << error.what() << std::endl;
 	}
 	
 	

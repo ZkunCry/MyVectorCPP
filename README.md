@@ -2,7 +2,7 @@
 
 Course project for "Algorithms and Data Structures". SurSU 2023.
 
-## Comparison with std::map and std::unordered_map
+## Comparison with std::vector
 
 To study the performance of the algorithm, as well as compare it with ready-made STL implementations,
 operations were performed to add elements using the push_Bask operation.

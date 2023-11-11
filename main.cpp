@@ -1,5 +1,4 @@
-﻿#include "WriteEx.h"
-#include <iostream>
+﻿#include <iostream>
 #include "MyVector.h"
 #include <vector>
 #include <algorithm>
@@ -11,7 +10,7 @@
 #include <math.h>
 typedef std::chrono::high_resolution_clock Clock;
 
-const static int N = 1000000;
+const static int N = 2000000;
 const static int N_DIV = 100;
 const static int K = N / 100;
 
@@ -24,36 +23,83 @@ int randAB(int min, int max)
 
 void testPushBack() {
 	std::string title = "Vector;";
-	/*int arr[6] = { 1,2,3,4,5,6 };
-	Vector<int>  vec(6,arr);
-	for (auto it = vec.begin(); it != vec.end(); ++it) {
-		std::cout << *it << std::endl;
-	}*/
 	std::vector<std::string> columns;
 
 	for (size_t i = N / 10; i <= N; i += N / N_DIV)
 	{
-		Vector<int>vec;
-		//Vector<int> vec;
+		std::vector<int>vec;
 		auto before = Clock::now();
-		for (int j = 0; j < i; j++)
-			//vec.push_back(randAB(1, 2));
-			vec.insert(randAB(0, 1000), vec.Size() );
-			//vec.insert(randAB(0, 1000),randAB(0,vec.Size()+1));
+		for (int j = 0; j < 100; j++)
+			vec.push_back(randAB(1, 2));
 		auto after = Clock::now();
 		using namespace std::chrono;
 		duration<double> time_span = duration_cast<duration<double>>(after - before);
-		std::cout << i << " " << time_span.count()/ N << std::endl;
-		//std::string result = std::to_string(i) + ";" + std::to_string(time_span.count() / 100);
-		/*result.replace(result.find('.'), 1, ",");
-		columns.push_back(result);*/
+		std::cout << i << " " << time_span.count()/ 100 << std::endl;
 
 	}
-	//writeInExcel(title, columns);
+
+}
+void testInsert()
+{
+	for (size_t i = N / 10; i <= N; i += N / N_DIV)
+	{
+		std::vector<int>vec;
+		//Vector<int>vec;
+		for (int j = 0; j < i; j++)
+			vec.push_back(randAB(0, 1000));
+		auto before = Clock::now();
+		for (int j = 0; j < 100; j++)
+		{
+			vec.insert(vec.begin() + i / 2, randAB(0, 1000));
+			//vec.insert(randAB(0, 1000), i/2);
+				//vec.insert(vec.begin()+ (vec.size()/2), randAB(0, 1000));
+
+		}
+		//vec.push_back(randAB(1, 2));
+		auto after = Clock::now();
+		using namespace std::chrono;
+		duration<double> time_span = duration_cast<duration<double>>(after - before);
+		std::cout << i << " " << time_span.count() / 100 << std::endl;
+
+	}
+}
+void testErase()
+{
+	for (size_t i = N / 10; i <= N; i += N / N_DIV)
+	{
+		std::vector<int>vec;
+		//Vector<int>vec;
+		for (int j = 0; j < i; j++)
+			vec.push_back(randAB(0, 1000));
+		auto before = Clock::now();
+		for (int j = 0; j < 100; j++)
+		{
+			//vec.erase(i / 2);
+			vec.erase(vec.begin());
+			//vec.insert(vec.begin() + i / 2, randAB(0, 1000));
+			//vec.insert(randAB(0, 1000), i/2);
+				//vec.insert(vec.begin()+ (vec.size()/2), randAB(0, 1000));
+
+		}
+		//vec.push_back(randAB(1, 2));
+		auto after = Clock::now();
+		using namespace std::chrono;
+		duration<double> time_span = duration_cast<duration<double>>(after - before);
+		std::cout << i << " " << time_span.count() / 100 << std::endl;
+
+	}
 }
 int main()
 {
-	Vector<int> test; 
+	//Vector<int> test; 
+	//std::vector<int>vec;
+	//for (int i = 0; i < 100; i++)
+	//{
+	//	vec.push_back(100);
+	//	std::cout << "Vec capacity on iteration number :" << i << "   " << vec.capacity() << std::endl;
+	//}
 	//test.printDebug();
-	testPushBack();
+	//testPushBack();
+	//testInsert();
+	testErase();
 }

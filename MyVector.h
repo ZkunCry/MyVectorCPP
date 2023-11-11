@@ -167,8 +167,6 @@ inline void Vector<_T>::insert(const_reference value, const_reference pos)
 	catch (std::exception &error) {
 		std::cout << error.what() << std::endl;
 	}
-	
-	
 }
 
 template<class _T>

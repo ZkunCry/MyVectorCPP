@@ -26,8 +26,17 @@ But the insertion method already has an asymptotic complexity equal to O(n). Of 
 
 ## Erase method
 
-The graph shows that the asymptotic complexity of this method is O(n), while the speed of the vector from the standard library is much higher and is almost O(1).
+The graph shows that the asymptotic complexity of the erase method is O(n) for both methods.
 
 <p align="center">
   <img src="https://github.com/ZkunCry/MyVectorCPP/raw/master/assets/erase.png" alt="drawing" width="500"/>
+</p>
+
+## Find method
+
+Both methods are based on a sequential search algorithm and, as you can see in the graphs,
+the asymptotic complexity is (n)
+
+<p align="center">
+  <img src="https://github.com/ZkunCry/MyVectorCPP/raw/master/assets/find.png" alt="drawing" width="500"/>
 </p>

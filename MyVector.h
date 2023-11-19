@@ -25,7 +25,7 @@ public:
 	void resize(size_t n, const_reference value = _T());
 	_T find(const_reference value)const;
 	void erase(const_reference position);
-	void insert(const_reference value,  const_reference pos);
+	void insert(const_reference pos,  const_reference value);
 	const size_t Size()const;
 	const size_t _Capacity()const;
 	_T& operator[](int index)const;
@@ -61,11 +61,11 @@ inline Vector<_T>::Vector(size_t count, const_pointer arr)
 	if (arr != nullptr)
 	{
 		size = count;
-		reserve(count);
-		if (Target == nullptr)
-			Target = new _T[Capacity];
-
+		if (size > Capacity)
+			Capacity = size * 2;
+		Target = new _T[Capacity];
 		std::copy_n(arr, count, Target);
+		
 	}
 }
 
@@ -83,7 +83,7 @@ inline void Vector<_T>::push_back(const_reference value)
 {
 	
 	if (size == Capacity) reserve(2 * size);
-	new(Target + size)_T(value);
+	this->Target[size] = value;
 	++size;
 }
 
@@ -93,7 +93,7 @@ inline void Vector<_T>::reserve(size_t n)
 	if (n <= Capacity)return;
 	_T* newarr = new _T[n];
 	for (size_t i = 0; i < size; ++i)
-		new(newarr + i)_T(Target[i]);
+		newarr[i] = Target[i];
 	delete[]Target;
 	Target = newarr;
 	Capacity = n;
@@ -104,8 +104,10 @@ inline void Vector<_T>::resize(size_t n, const_reference value)
 {
 	if (n > Capacity)
 		reserve(n);
-	for (size_t i  = size; i < n; ++i)
-		new(Target + i)_T(value);
+	for (size_t i = size; i < n; ++i)
+	{
+		Target[i] = value;
+	}
 	if (n < size)
 		size = n;
 }
@@ -113,17 +115,9 @@ inline void Vector<_T>::resize(size_t n, const_reference value)
 template<class _T>
 inline  _T  Vector<_T>::find(const_reference value) const
 {
-	int first = 0;
-	int last = size -1;
-	while (first <= last) {
-		int mid = (first + last) / 2;
-		if (Target[mid] == value)
-			return mid;
-		else if (Target[mid] < value)
-			first = mid + 1;
-		else if (Target[mid] > value)
-			last = mid - 1;
-	}
+	for (int i = 0; i < size; i++)
+		if (Target[i] == value)
+			return i;
 	return -1;
 }
 
@@ -131,20 +125,19 @@ template<class _T>
 inline void Vector<_T>::erase(const_reference position)
 {
 	try {
-		if (position > size || position <= 0 || this == nullptr || size == 0)
+		if (position > size || position < 0 || this == nullptr || size == 0)
 			throw std::out_of_range("Invalid index, out_of_range");
-		auto positionSwap = position - 1;
-		for (int i = positionSwap; i < size; i++)
-			Target[i] = Target[i + 1];
+		memmove(Target + position, Target + position + 1, sizeof(_T) * (size - position));
 		size--;
 	}
 	catch (std::exception &error) {
+		
 		std::cout << error.what() << std::endl;
 	}
 }
 
 template<class _T>
-inline void Vector<_T>::insert(const_reference value, const_reference pos)
+inline void Vector<_T>::insert(const_reference pos, const_reference value)
 {
 
 	try {
@@ -255,7 +248,20 @@ template<class _T>
 	}
 	if (success == findCount) {
 		std::cout << "INFO: " << "Success find elements: " << success << std::endl;
-		std::cout << "Test success" << std::endl;
+		std::cout << "Test success" << std::endl<<std::endl;
 	}
+
+	const int countInsert = 30;
+	int prevSize = vect.size;
+	std::cout << "Test insert " << std::endl << "Count insert of elements: " << countInsert << std::endl;
+	for (int i = 0; i < countInsert; i++)
+
+		vect.insert(randAB(0, 1000), vect.size / 2);
+	if (vect.size - 30 == prevSize)
+	{
+		std::cout << "INFO: " << "Size: " << vect.Size() << " Capacity: " << vect._Capacity() << std::endl;
+		std::cout << "Test success" << std::endl << std::endl;
+	}
+
 
 }
